@@ -4,7 +4,7 @@ basic_settings = {
     # dataset
     'dataset': 'cifar-10',
     'root': '../LabNoise/data',
-    'algorithm': 'simclr',
+    'algorithm': 'simsiam',
     # model
     'base_encoder': 'resnet18',
     'hidden_units': 128,

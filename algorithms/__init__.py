@@ -1,3 +1,4 @@
-from .simclr_models import SimCLR
+from .simclr import SimCLR
+from .simsiam import SimSiam
 
-__all__ = ('SimCLR')
+__all__ = ('SimCLR', 'SimSiam')
