@@ -9,7 +9,7 @@ Algorithms:
 - [x] [SimCLR]
 - [ ] [MoCo]
 - [ ] [Byol] 
-- [x] [SimSiam]
+- [ ] [SimSiam]
 
 Datasets:
 
