@@ -16,13 +16,13 @@ class SimSiam_MODEL(nn.Module):
                 self.in_feature_dim = module.in_features
         self.encoder = nn.Sequential(*self.encoder)
          # projection mlp
-        self.projection_head = nn.Sequential(*[nn.Linear(self.in_feature_dim, 2048, bias=True), 
-                  nn.BatchNorm1d(2048),
+        self.projection_head = nn.Sequential(*[nn.Linear(self.in_feature_dim, hidden_units, bias=True), 
+                  nn.BatchNorm1d(hidden_units),
                   nn.ReLU(inplace=True), 
-                  nn.Linear(2048, 2048, bias=True), 
-                  nn.BatchNorm1d(2048),
+                  nn.Linear(hidden_units, hidden_units, bias=True), 
+                  nn.BatchNorm1d(hidden_units),
                   nn.ReLU(inplace=True), 
-                  nn.Linear(2048, self.out_feature_dim, bias=True),
+                  nn.Linear(hidden_units, self.out_feature_dim, bias=True),
                   nn.BatchNorm1d(self.out_feature_dim)])
         # prediction mlp
         self.predictor = nn.Sequential(
@@ -37,4 +37,4 @@ class SimSiam_MODEL(nn.Module):
         representation = torch.flatten(x, start_dim=1)
         projection = self.projection_head(representation)
         prediction = self.predictor(projection)
-        return F.normalize(representation, dim=-1), F.normalize(projection, dim=-1), F.normalize(prediction, dim=-1)
+        return representation, projection, prediction

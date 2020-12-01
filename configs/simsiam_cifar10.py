@@ -7,9 +7,9 @@ basic_settings = {
     'algorithm': 'simsiam',
     # model
     'base_encoder': 'resnet18',
-    'hidden_units': 128,
+    'hidden_units': 2048,
     # train
-    'batch_size': 128,
+    'batch_size': 512,
     'epochs': 800,
 }
 train_settings = {

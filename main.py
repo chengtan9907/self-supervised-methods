@@ -28,7 +28,6 @@ if __name__ == '__main__':
     # data preparation
     data_setting = get_settings(dataset, root)
     train_loader, test_loader, memory_loader = get_dataloader(data_setting, batch_size)
-    
 
     # model setup
     if algorithm == 'simclr':

@@ -17,12 +17,12 @@ class SimSiam(SimCLR):
     def get_representations(self, x):
         with torch.no_grad():
             representation, _, _ = self.model(x)
-        return representation
+        return F.normalize(representation, dim=1)
 
     def D(self, p, z):
         p = F.normalize(p, p=2, dim=1)
         z = F.normalize(z, p=2, dim=1)
-        return  (p * z).sum(dim=1).mean()
+        return (p * z).sum(dim=1).mean()
 
     def train(self, epoch, epochs):
         adjust_learning_rate(self.optimizer, epoch, self.lr, epochs)
