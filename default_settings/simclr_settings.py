@@ -5,13 +5,10 @@ DATASETS_INFO = {
         'mean': [0.4914, 0.4822, 0.4465],
         'std': [0.2023, 0.1994, 0.2010],
         'image_size': 32,
-        'batch_size': 128,
-        'epochs': 100
     },
-
 }
 
-def get_simclr_setting(dataset:str = None, root:str = None):
+def get_settings(dataset:str = None, root:str = None):
     dataset_info = DATASETS_INFO[dataset]
     data_setting = {
         'dataset': dataset,
@@ -26,6 +23,6 @@ def get_simclr_setting(dataset:str = None, root:str = None):
             transforms.Normalize(dataset_info['mean'], dataset_info['std'])]),
         'test_transformation': transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010])]),
+            transforms.Normalize(dataset_info['mean'], dataset_info['std'])]),
     }
     return data_setting

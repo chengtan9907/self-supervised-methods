@@ -103,7 +103,7 @@ if __name__ == '__main__':
     
     set_seed(seed)
     # data preparation
-    data_setting = get_simclr_setting(dataset, root)
+    data_setting = get_settings(dataset, root)
     train_loader, test_loader, memory_loader = get_dataloader(data_setting, batch_size)
     num_classes = len(test_loader.dataset.classes)
 
