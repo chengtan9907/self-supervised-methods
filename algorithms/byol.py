@@ -16,7 +16,7 @@ class Byol(SimCLR):
         # online encoder : f + g
         self.model = Byol_Encoder(base_encoder, hidden_units, projection_dim=self.projection_dim).to(self.device)
         # predictor for online encoder
-        self.predictor = Predictor(self.projection_dim)
+        self.predictor = Predictor(self.projection_dim).to(self.device)
         # target encoder : f + g
         self.target_encoder = Byol_Encoder(base_encoder, hidden_units, projection_dim=self.projection_dim).to(self.device)
         self.set_requires_grad(self.target_encoder, False)
@@ -58,11 +58,11 @@ class Byol(SimCLR):
             online_prediction_2 = self.predictor(online_projection_2)
 
             with torch.no_grad():
-                _, target_projection_1 = self.target_encoder(x1).detach()
-                _, target_projection_2 = self.target_encoder(x2).detach()
+                _, target_projection_1 = self.target_encoder(x1)
+                _, target_projection_2 = self.target_encoder(x2)
 
            
-            loss = self.L(online_prediction_1, target_projection_2) + self.L(online_prediction_2, target_projection_1)
+            loss = self.L(online_prediction_1, target_projection_2.detach()) + self.L(online_prediction_2, target_projection_1.detach())
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
