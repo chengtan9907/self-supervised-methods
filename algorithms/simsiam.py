@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from upmodels import SimSiam_MODEL
+from usmodels import SimSiam_MODEL
 from tqdm import tqdm
 from utils import adjust_learning_rate
 from .simclr import SimCLR
