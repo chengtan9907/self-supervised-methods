@@ -113,6 +113,6 @@ venv.bak/
 .empty/
 data/
 pretrained_weights/
-log/
+logs/
 autotrain.py
 *.out

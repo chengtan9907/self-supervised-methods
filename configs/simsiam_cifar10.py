@@ -9,7 +9,7 @@ basic_settings = {
     'base_encoder': 'resnet18',
     'hidden_units': 2048,
     # train
-    'batch_size': 512,
+    'batch_size': 256,
     'epochs': 800,
 }
 train_settings = {
