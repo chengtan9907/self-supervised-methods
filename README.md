@@ -8,8 +8,8 @@ Algorithms:
 
 - [x] [SimCLR]
 - [ ] [MoCo]
-- [ ] [Byol] 
-- [ ] [SimSiam]
+- [x] [Byol] 
+- [x] [SimSiam]
 
 Datasets:
 

@@ -13,7 +13,7 @@ basic_settings = {
     'epochs': 800,
 }
 train_settings = {
-    'lr': 1e-3,
+    'lr': 0.03,
     'weight_decay': 0.0005,
     'momentum': 0.9,
     'temperature': 0.5,

@@ -36,9 +36,9 @@ def get_dataloader(data_setting, batch_size):
         train_loader = DataLoader(CIFAR10(root=root, train=True, transform=TwoCropsTransform(train_transform), download=True), 
                                 batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True, drop_last=True)
         test_loader = DataLoader(CIFAR10(root=root, train=False, transform=test_transform, download=True), 
-                                batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True, drop_last=True)  
+                                batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, drop_last=True)  
         memory_loader = DataLoader(CIFAR10(root=root, train=True, transform=test_transform, download=True), 
-                                batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True, drop_last=True)
+                                batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, drop_last=True)
     else:
         raise "incorrect dataset name"
 

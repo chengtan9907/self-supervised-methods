@@ -2,14 +2,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from usmodels import SimCLR_MODEL
+from usmodels import TEST_MODEL
 from tqdm import tqdm
 from utils import adjust_learning_rate
 
-class SimCLR(object):
+class TEST(object):
     def __init__(self, base_encoder, hidden_units, train_loader, test_loader, memory_loader, train_settings, device):
         self.device = device
-        self.model = SimCLR_MODEL(base_encoder, hidden_units).to(self.device)
+        self.model = TEST_MODEL(feature_dim=512).to(self.device)
         self.train_loader = train_loader
         self.test_loader = test_loader
         self.memory_loader = memory_loader
@@ -19,10 +19,10 @@ class SimCLR(object):
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, 
                                     momentum=train_settings['momentum'], weight_decay=train_settings['weight_decay'])
 
-    def get_representations(self, x):
-        with torch.no_grad():
-            representation, _ = self.model(x)
-        return representation
+    def D(self, p, z):
+        p = F.normalize(p, p=2, dim=1)
+        z = F.normalize(z, p=2, dim=1)
+        return (p * z).sum(dim=1).mean()
 
     def train(self, epoch, epochs):
         adjust_learning_rate(self.optimizer, epoch, self.lr, epochs)
@@ -31,22 +31,10 @@ class SimCLR(object):
         for x, target in train_bar:
             batch_size = len(target)
             x1, x2 = x[0].cuda(), x[1].cuda()
-            representation_1, projection_1 = self.model(x1)
-            representation_2, projection_2 = self.model(x2)
+            _, z1, p1 = self.model(x1)
+            _, z2, p2 = self.model(x2)
 
-            # [2*B, D]
-            out = torch.cat([projection_1, projection_2], dim=0)
-            # [2*B, 2*B]
-            sim_matrix = torch.exp(torch.mm(out, out.t().contiguous()) / self.temperature)
-            mask = (torch.ones_like(sim_matrix) - torch.eye(2 * batch_size, device=sim_matrix.device)).bool()
-            # [2*B, 2*B-1]
-            sim_matrix = sim_matrix.masked_select(mask).view(2 * batch_size, -1)
-
-            # compute loss
-            pos_sim = torch.exp(torch.sum(projection_1 * projection_2, dim=-1) / self.temperature)
-            # [2*B]
-            pos_sim = torch.cat([pos_sim, pos_sim], dim=0)
-            loss = (- torch.log(pos_sim / sim_matrix.sum(dim=-1))).mean()
+            loss = self.D(p1, z2.detach()) / 2 + self.D(p2, z1.detach()) / 2
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
@@ -54,17 +42,20 @@ class SimCLR(object):
             total_num += batch_size
             total_loss += loss.item() * batch_size
             train_bar.set_description('Train Epoch: [{}/{}] Loss: {:.4f}'.format(epoch, epochs, total_loss / total_num))
+
         return total_loss / total_num
 
-    def test(self, k=200):
+    def test(self):
         self.model.eval()
-
+        k=200
+        c=10
         total_top1, total_top5, total_num, feature_bank = 0.0, 0.0, 0, []
         with torch.no_grad():
             # generate feature bank
             for data, target in tqdm(self.memory_loader, desc='Feature extracting'):
-                representation = self.get_representations(data.to(self.device, non_blocking=True))
-                feature_bank.append(representation)
+                feature, _, _ = self.model(data.cuda(non_blocking=True))
+                feature = F.normalize(feature, dim=1)
+                feature_bank.append(feature)
             # [D, N]
             feature_bank = torch.cat(feature_bank, dim=0).t().contiguous()
             # [N]
@@ -72,25 +63,26 @@ class SimCLR(object):
             # loop test data to predict the label by weighted knn search
             test_bar = tqdm(self.test_loader)
             for data, target in test_bar:
-                target = target.to(self.device, non_blocking=True)
-                representation = self.get_representations(data.to(self.device, non_blocking=True))
+                data, target = data.cuda(non_blocking=True), target.cuda(non_blocking=True)
+                feature, _, _ = self.model(data)
+                feature = F.normalize(feature, dim=1)
 
                 total_num += data.size(0)
                 # compute cos similarity between each feature vector and feature bank ---> [B, N]
-                sim_matrix = torch.mm(representation, feature_bank)
+                sim_matrix = torch.mm(feature, feature_bank)
                 # [B, K]
                 sim_weight, sim_indices = sim_matrix.topk(k=k, dim=-1)
                 # [B, K]
                 sim_labels = torch.gather(feature_labels.expand(data.size(0), -1), dim=-1, index=sim_indices)
-                # sim_weight = (sim_weight / self.temperature).exp()
+                # sim_weight = (sim_weight / temperature).exp()
 
                 # counts for each class
-                one_hot_label = torch.zeros(data.size(0) * k, self.num_classes, device=sim_labels.device)
+                one_hot_label = torch.zeros(data.size(0) * k, c, device=sim_labels.device)
                 # [B*K, C]
                 one_hot_label = one_hot_label.scatter(dim=-1, index=sim_labels.view(-1, 1), value=1.0)
                 # weighted score ---> [B, C]
-                # pred_scores = torch.sum(one_hot_label.view(data.size(0), -1, self.num_classes) * sim_weight.unsqueeze(dim=-1), dim=1)
-                pred_scores = torch.sum(one_hot_label.view(data.size(0), -1, self.num_classes), dim=1)
+                # pred_scores = torch.sum(one_hot_label.view(data.size(0), -1, c) * sim_weight.unsqueeze(dim=-1), dim=1)
+                pred_scores = torch.sum(one_hot_label.view(data.size(0), -1, c), dim=1)
 
                 pred_labels = pred_scores.argsort(dim=-1, descending=True)
                 total_top1 += torch.sum((pred_labels[:, :1] == target.unsqueeze(dim=-1)).any(dim=-1).float()).item()

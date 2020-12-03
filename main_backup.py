@@ -7,7 +7,6 @@ import torch.nn.functional as F
 from tqdm import tqdm
 import json
 from utils import *
-import utils2
 from default_settings import get_settings
 
 # build model
@@ -31,20 +30,20 @@ if __name__ == '__main__':
     train_loader, test_loader, memory_loader = get_dataloader(data_setting, batch_size)
 
     # model setup
-    if algorithm == 'simclr':
-        model = SimCLR(base_encoder=models.__dict__[base_encoder](), hidden_units=hidden_units, 
+    from algorithms import TEST
+    model = TEST(base_encoder=models.__dict__[base_encoder](), hidden_units=hidden_units, 
                    train_loader=train_loader, test_loader=test_loader, memory_loader=memory_loader, 
                    train_settings=config['train_settings'], device=device)
-    elif algorithm == 'simsiam':
-        model = SimSiam(base_encoder=models.__dict__[base_encoder](), hidden_units=hidden_units, 
-                   train_loader=train_loader, test_loader=test_loader, memory_loader=memory_loader, 
-                   train_settings=config['train_settings'], device=device)
-    elif algorithm == 'byol':
-        model = Byol(base_encoder=models.__dict__[base_encoder](), hidden_units=hidden_units, 
-                   train_loader=train_loader, test_loader=test_loader, memory_loader=memory_loader, 
-                   train_settings=config['train_settings'], device=device)
-    # from algorithms import TEST
-    # model = TEST(base_encoder=models.__dict__[base_encoder](), hidden_units=hidden_units, 
+    # if algorithm == 'simclr':
+    #     model = SimCLR(base_encoder=models.__dict__[base_encoder](), hidden_units=hidden_units, 
+    #                train_loader=train_loader, test_loader=test_loader, memory_loader=memory_loader, 
+    #                train_settings=config['train_settings'], device=device)
+    # elif algorithm == 'simsiam':
+    #     model = SimSiam(base_encoder=models.__dict__[base_encoder](), hidden_units=hidden_units, 
+    #                train_loader=train_loader, test_loader=test_loader, memory_loader=memory_loader, 
+    #                train_settings=config['train_settings'], device=device)
+    # elif algorithm == 'byol':
+    #     model = Byol(base_encoder=models.__dict__[base_encoder](), hidden_units=hidden_units, 
     #                train_loader=train_loader, test_loader=test_loader, memory_loader=memory_loader, 
     #                train_settings=config['train_settings'], device=device)
 
