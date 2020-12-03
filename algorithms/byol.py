@@ -60,7 +60,6 @@ class Byol(SimCLR):
             with torch.no_grad():
                 _, target_projection_1 = self.target_encoder(x1)
                 _, target_projection_2 = self.target_encoder(x2)
-
            
             loss = self.L(online_prediction_1, target_projection_2.detach()) + self.L(online_prediction_2, target_projection_1.detach())
             self.optimizer.zero_grad()

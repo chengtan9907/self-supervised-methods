@@ -10,10 +10,12 @@ class SimSiam_MODEL(nn.Module):
         self.in_feature_dim = 2048
         self.out_feature_dim = 2048
         for name, module in base_encoder.named_children():
-            if not isinstance(module, nn.Linear):
-                self.encoder.append(module)
-            else:
+            if isinstance(module, nn.Linear):
                 self.in_feature_dim = module.in_features
+            elif isinstance(module, nn.MaxPool2d):
+                continue
+            else:
+                self.encoder.append(module)
         self.encoder = nn.Sequential(*self.encoder)
          # projection mlp
         self.projection_head = nn.Sequential(*[nn.Linear(self.in_feature_dim, hidden_units, bias=True), 

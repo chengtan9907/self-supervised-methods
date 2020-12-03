@@ -63,7 +63,7 @@ class SimCLR(object):
         with torch.no_grad():
             # generate feature bank
             for data, target in tqdm(self.memory_loader, desc='Feature extracting'):
-                representation = self.get_representations(data.to(self.device))
+                representation = self.get_representations(data.to(self.device, non_blocking=True))
                 feature_bank.append(representation)
             # [D, N]
             feature_bank = torch.cat(feature_bank, dim=0).t().contiguous()
@@ -72,8 +72,9 @@ class SimCLR(object):
             # loop test data to predict the label by weighted knn search
             test_bar = tqdm(self.test_loader)
             for data, target in test_bar:
-                representation = self.get_representations(data.to(self.device))
-                target = target.to(self.device)
+                target = target.to(self.device, non_blocking=True)
+                representation = self.get_representations(data.to(self.device, non_blocking=True))
+
                 total_num += data.size(0)
                 # compute cos similarity between each feature vector and feature bank ---> [B, N]
                 sim_matrix = torch.mm(representation, feature_bank)
